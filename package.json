@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env DEBUG=my-api-portfolio:* node index.js",
-    "dev": "nodemon index.js",
-    "install-prod": "npm install --omit=dev"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
