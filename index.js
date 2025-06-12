@@ -4,8 +4,10 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const { v2: cloudinary } = require("cloudinary");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cors = require("cors"); // <-- เพิ่มบรรทัดนี้
 
 const app = express();
+app.use(cors()); // <-- เพิ่มบรรทัดนี้
 app.use(express.json());
 
 // เชื่อม MongoDB
