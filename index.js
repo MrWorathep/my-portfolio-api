@@ -39,11 +39,11 @@ const Project = mongoose.model("Project", projectSchema);
 const experienceSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
-    image: { type: String, required: true }, // รูปภาพ 1 รูป
+    image: { type: String, required: true },
     position: { type: String, required: true },
     organization: { type: String, required: true },
     year: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: [String], required: true },
   },
   { timestamps: true }
 );
@@ -56,8 +56,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ตั้งค่า Multer + Cloudinary
-const storage = new CloudinaryStorage({
+// ตั้งค่า Multer + Cloudinary สำหรับ Project
+const projectStorage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "projects",
@@ -65,7 +65,18 @@ const storage = new CloudinaryStorage({
     transformation: [{ quality: "auto" }, { fetch_format: "auto" }],
   },
 });
-const upload = multer({ storage });
+const uploadProjectImages = multer({ storage: projectStorage });
+
+// ตั้งค่า Multer + Cloudinary สำหรับ Experience
+const experienceStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "experiences",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+    transformation: [{ quality: "auto" }, { fetch_format: "auto" }],
+  },
+});
+const uploadExperienceImage = multer({ storage: experienceStorage });
 
 // API ดึง Project ทั้งหมด
 app.get("/api/projects", async (req, res) => {
@@ -81,7 +92,7 @@ app.get("/api/projects", async (req, res) => {
 // API สร้าง Project + อัปโหลดรูปหลายรูป
 app.post(
   "/api/projects/create-with-images",
-  upload.array("images"),
+  uploadProjectImages.array("images"),
   async (req, res) => {
     const { projectName, detail, role, developmentDetails } = req.body;
 
@@ -136,7 +147,7 @@ app.get("/api/experiences", async (req, res) => {
 // API เพิ่ม Experience + อัปโหลดรูป 1 รูป
 app.post(
   "/api/experiences/create-with-image",
-  upload.single("image"),
+  uploadExperienceImage.single("image"),
   async (req, res) => {
     const { title, position, organization, year, description } = req.body;
 
@@ -148,6 +159,19 @@ app.post(
       return res.status(400).json({ message: "กรุณาอัปโหลดรูปภาพ" });
     }
 
+    // แปลง description จาก JSON string เป็น array
+    let descriptions;
+    try {
+      descriptions = JSON.parse(description);
+      if (!Array.isArray(descriptions)) {
+        throw new Error();
+      }
+    } catch {
+      return res
+        .status(400)
+        .json({ message: "description ต้องเป็น JSON array ของข้อความ" });
+    }
+
     try {
       const imageUrl = req.file.path;
 
@@ -157,7 +181,7 @@ app.post(
         position,
         organization,
         year,
-        description,
+        description: descriptions,
       });
 
       await newExperience.save();
