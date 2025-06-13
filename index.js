@@ -4,10 +4,10 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const { v2: cloudinary } = require("cloudinary");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cors = require("cors"); // <-- เพิ่มบรรทัดนี้
+const cors = require("cors");
 
 const app = express();
-app.use(cors()); // <-- เพิ่มบรรทัดนี้
+app.use(cors());
 app.use(express.json());
 
 // เชื่อม MongoDB
@@ -17,12 +17,12 @@ async function connectDB() {
     console.log("MongoDB connected");
   } catch (err) {
     console.error("MongoDB connection error:", err.message);
-    process.exit(1); // หยุดโปรแกรมถ้าเชื่อมต่อไม่ได้
+    process.exit(1);
   }
 }
 connectDB();
 
-// สร้าง Schema + Model สำหรับ Project
+// Schema + Model สำหรับ Project
 const projectSchema = new mongoose.Schema(
   {
     projectName: { type: String, required: true },
@@ -33,8 +33,21 @@ const projectSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 const Project = mongoose.model("Project", projectSchema);
+
+// Schema + Model สำหรับ Experience
+const experienceSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    image: { type: String, required: true }, // รูปภาพ 1 รูป
+    position: { type: String, required: true },
+    organization: { type: String, required: true },
+    year: { type: String, required: true },
+    description: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+const Experience = mongoose.model("Experience", experienceSchema);
 
 // ตั้งค่า Cloudinary
 cloudinary.config({
@@ -54,7 +67,7 @@ const storage = new CloudinaryStorage({
 });
 const upload = multer({ storage });
 
-// ดึงโปรเจกต์ทั้งหมด
+// API ดึง Project ทั้งหมด
 app.get("/api/projects", async (req, res) => {
   try {
     const projects = await Project.find();
@@ -65,14 +78,13 @@ app.get("/api/projects", async (req, res) => {
   }
 });
 
-// สร้างโปรเจกต์ + อัปโหลดรูป
+// API สร้าง Project + อัปโหลดรูปหลายรูป
 app.post(
   "/api/projects/create-with-images",
   upload.array("images"),
   async (req, res) => {
     const { projectName, detail, role, developmentDetails } = req.body;
 
-    // ตรวจสอบว่าฟิลด์จำเป็นครบไหม
     if (!projectName || !detail || !role || !developmentDetails) {
       return res.status(400).json({
         message:
@@ -102,6 +114,57 @@ app.post(
       res.status(201).json({
         message: "สร้างโปรเจกต์พร้อมอัปโหลดรูปสำเร็จ",
         project: newProject,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" });
+    }
+  }
+);
+
+// API ดึง Experience ทั้งหมด
+app.get("/api/experiences", async (req, res) => {
+  try {
+    const experiences = await Experience.find();
+    res.json(experiences);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดที่ฝั่งเซิร์ฟเวอร์" });
+  }
+});
+
+// API เพิ่ม Experience + อัปโหลดรูป 1 รูป
+app.post(
+  "/api/experiences/create-with-image",
+  upload.single("image"),
+  async (req, res) => {
+    const { title, position, organization, year, description } = req.body;
+
+    if (!title || !position || !organization || !year || !description) {
+      return res.status(400).json({ message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: "กรุณาอัปโหลดรูปภาพ" });
+    }
+
+    try {
+      const imageUrl = req.file.path;
+
+      const newExperience = new Experience({
+        title,
+        image: imageUrl,
+        position,
+        organization,
+        year,
+        description,
+      });
+
+      await newExperience.save();
+
+      res.status(201).json({
+        message: "เพิ่มข้อมูลประสบการณ์พร้อมรูปภาพสำเร็จ",
+        experience: newExperience,
       });
     } catch (error) {
       console.error(error);
