@@ -30,6 +30,7 @@ const projectSchema = new mongoose.Schema(
     detail: { type: String, required: true },
     role: { type: String, required: true },
     developmentDetails: { type: String, required: true },
+  },
   { timestamps: true }
 );
 
