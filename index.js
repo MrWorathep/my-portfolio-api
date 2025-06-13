@@ -159,7 +159,6 @@ app.post(
       return res.status(400).json({ message: "กรุณาอัปโหลดรูปภาพ" });
     }
 
-    // แปลง description จาก JSON string เป็น array
     let descriptions;
     try {
       descriptions = JSON.parse(description);
