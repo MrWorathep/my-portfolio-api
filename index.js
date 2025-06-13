@@ -28,7 +28,7 @@ const projectSchema = new mongoose.Schema(
     projectName: { type: String, required: true },
     images: { type: [String], required: true },
     detail: { type: String, required: true },
-    projectType: { type: String, required: true }, // <-- เพิ่ม
+    role: { type: String, required: true }, // <-- เพิ่ม
     developmentDetails: { type: String, required: true }, // <-- เพิ่ม
   },
   { timestamps: true }
@@ -93,7 +93,7 @@ app.post(
         projectName,
         images: imageUrls,
         detail,
-        projectType,
+        role,
         developmentDetails,
       });
 
