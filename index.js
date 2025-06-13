@@ -26,8 +26,10 @@ connectDB();
 const projectSchema = new mongoose.Schema(
   {
     projectName: { type: String, required: true },
-    images: { type: [String], required: true }, // เปลี่ยนชื่อฟิลด์ image → images
+    images: { type: [String], required: true },
     detail: { type: String, required: true },
+    projectType: { type: String, required: true }, // <-- เพิ่ม
+    developmentDetails: { type: String, required: true }, // <-- เพิ่ม
   },
   { timestamps: true }
 );
@@ -68,10 +70,14 @@ app.post(
   "/api/projects/create-with-images",
   upload.array("images"),
   async (req, res) => {
-    const { projectName, detail } = req.body;
+    const { projectName, detail, projectType, developmentDetails } = req.body;
 
-    if (!projectName || !detail) {
-      return res.status(400).json({ message: "projectName และ detail จำเป็น" });
+    // ตรวจสอบว่าฟิลด์จำเป็นครบไหม
+    if (!projectName || !detail || !projectType || !developmentDetails) {
+      return res.status(400).json({
+        message:
+          "กรุณากรอกข้อมูล projectName, detail, projectType และ developmentDetails ให้ครบถ้วน",
+      });
     }
 
     if (!req.files || req.files.length === 0) {
@@ -85,8 +91,10 @@ app.post(
 
       const newProject = new Project({
         projectName,
-        images: imageUrls, // ตรงกับ schema ใหม่
+        images: imageUrls,
         detail,
+        projectType,
+        developmentDetails,
       });
 
       await newProject.save();
