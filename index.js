@@ -29,7 +29,7 @@ const projectSchema = new mongoose.Schema(
     images: { type: [String], required: true },
     detail: { type: String, required: true },
     role: { type: String, required: true },
-    developmentDetails: { type: String, required: true },
+    tools: { type: String, required: true },
   },
   { timestamps: true }
 );
@@ -94,12 +94,12 @@ app.post(
   "/api/projects/create-with-images",
   uploadProjectImages.array("images"),
   async (req, res) => {
-    const { projectName, detail, role, developmentDetails } = req.body;
+    const { projectName, detail, role, tools } = req.body;
 
-    if (!projectName || !detail || !role || !developmentDetails) {
+    if (!projectName || !detail || !role || !tools) {
       return res.status(400).json({
         message:
-          "กรุณากรอกข้อมูล projectName, detail, role และ developmentDetails ให้ครบถ้วน",
+          "กรุณากรอกข้อมูล projectName, detail, role และ tools ให้ครบถ้วน",
       });
     }
 
@@ -117,7 +117,7 @@ app.post(
         images: imageUrls,
         detail,
         role,
-        developmentDetails,
+        tools,
       });
 
       await newProject.save();
