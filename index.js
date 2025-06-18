@@ -30,6 +30,7 @@ const projectSchema = new mongoose.Schema(
     detail: { type: String, required: true },
     role: { type: String, required: true },
     tools: { type: String, required: true },
+    linkDemo: { type: String, required: false },
   },
   { timestamps: true }
 );
@@ -94,7 +95,7 @@ app.post(
   "/api/projects/create-with-images",
   uploadProjectImages.array("images"),
   async (req, res) => {
-    const { projectName, detail, role, tools } = req.body;
+    const { projectName, detail, role, tools, linkDemo } = req.body;
 
     if (!projectName || !detail || !role || !tools) {
       return res.status(400).json({
@@ -118,6 +119,7 @@ app.post(
         detail,
         role,
         tools,
+        linkDemo,
       });
 
       await newProject.save();
