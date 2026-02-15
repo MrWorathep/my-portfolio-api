@@ -82,7 +82,7 @@ const uploadExperienceImage = multer({ storage: experienceStorage });
 // API ดึง Project ทั้งหมด
 app.get("/api/projects", async (req, res) => {
   try {
-    const projects = await Project.find();
+    const projects = await Project.find().sort({ createdAt: -1 });
     res.json(projects);
   } catch (error) {
     console.error(error);
@@ -138,7 +138,7 @@ app.post(
 // API ดึง Experience ทั้งหมด
 app.get("/api/experiences", async (req, res) => {
   try {
-    const experiences = await Experience.find();
+    const experiences = await Experience.find().sort({ createdAt: -1 });
     res.json(experiences);
   } catch (error) {
     console.error(error);
